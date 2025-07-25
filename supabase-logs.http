@@ -1,0 +1,6 @@
+@load "dotenv"
+
+### Streaming de logs de send-audio
+GET https://api.supabase.com/projects/{{SUPABASE_PROJECT_REF}}/functions/v1/stream/logs?fn_name=send-audio
+Authorization: Bearer {{SUPABASE_SERVICE_ROLE_KEY}}
+Accept: text/event-stream

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import ContactList from '@/components/ContactList';
 import ChatWindow from '@/components/ChatWindow';
 import MessageInput from '@/components/MessageInput';
-import { supabase } from '@/lib/supabaseClient';
 
 export default function Home() {
   const [selectedContact, setSelectedContact] = useState<any>(null);
@@ -17,56 +16,58 @@ export default function Home() {
       return;
     }
 
-    const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('contact_id', selectedContact.id)
-        .order('created_at', { ascending: true });
-      if (error) {
-        console.error('Error fetching messages:', error);
-      } else {
-        setMessages(data || []);
-      }
-    };
-    fetchMessages();
+    // --- TODO: Refactorizar para obtener datos desde Vercel Postgres ---
+    // const fetchMessages = async () => {
+    //   const { data, error } = await supabase
+    //     .from('messages')
+    //     .select('*')
+    //     .eq('contact_id', selectedContact.id)
+    //     .order('created_at', { ascending: true });
+    //   if (error) {
+    //     console.error('Error fetching messages:', error);
+    //   } else {
+    //     setMessages(data || []);
+    //   }
+    // };
+    // fetchMessages();
   }, [selectedContact]);
 
   // Efecto para la suscripción en tiempo real
   useEffect(() => {
-    const channel = supabase
-      .channel('public:messages')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        (payload) => {
-          if (payload.new.contact_id === selectedContact?.id) {
-            setMessages((prevMessages) => {
-              // Reemplazar el mensaje optimista si existe, o añadir el nuevo si no.
-              const optimisticIndex = prevMessages.findIndex(
-                (msg) => !msg.id && msg.content === payload.new.content
-              );
+    // --- TODO: Refactorizar para usar Vercel Postgres y Sockets/Polling ---
+    // const channel = supabase
+    //   .channel('public:messages')
+    //   .on(
+    //     'postgres_changes',
+    //     { event: 'INSERT', schema: 'public', table: 'messages' },
+    //     (payload) => {
+    //       if (payload.new.contact_id === selectedContact?.id) {
+    //         setMessages((prevMessages) => {
+    //           // Reemplazar el mensaje optimista si existe, o añadir el nuevo si no.
+    //           const optimisticIndex = prevMessages.findIndex(
+    //             (msg) => !msg.id && msg.content === payload.new.content
+    //           );
 
-              if (optimisticIndex !== -1) {
-                const newMessages = [...prevMessages];
-                newMessages[optimisticIndex] = payload.new;
-                return newMessages;
-              } else {
-                // Asegurarse de no añadir un mensaje que ya existe
-                if (!prevMessages.some((msg) => msg.id === payload.new.id)) {
-                  return [...prevMessages, payload.new];
-                }
-              }
-              return prevMessages;
-            });
-          }
-        }
-      )
-      .subscribe();
+    //           if (optimisticIndex !== -1) {
+    //             const newMessages = [...prevMessages];
+    //             newMessages[optimisticIndex] = payload.new;
+    //             return newMessages;
+    //           } else {
+    //             // Asegurarse de no añadir un mensaje que ya existe
+    //             if (!prevMessages.some((msg) => msg.id === payload.new.id)) {
+    //               return [...prevMessages, payload.new];
+    //             }
+    //           }
+    //           return prevMessages;
+    //         });
+    //       }
+    //     }
+    //   )
+    //   .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // return () => {
+    //   supabase.removeChannel(channel);
+    // };
   }, [selectedContact]);
 
   const handleNewMessage = (newMessage: any) => {

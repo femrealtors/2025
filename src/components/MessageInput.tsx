@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+// import { supabase } from '@/lib/supabaseClient' // Comentado
 import { Send, Mic } from 'lucide-react'
 
 export default function MessageInput({
@@ -52,34 +52,35 @@ export default function MessageInput({
     }
     onNewMessage(optimisticMessage)
 
+    // --- TODO: Refactorizar con Vercel Blob y Vercel Functions ---
     // 1. Subir el archivo de audio a Supabase Storage
-    const filePath = `public/${contactPhone}_${Date.now()}.ogg`
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('voicenotes')
-      .upload(filePath, audioBlob)
+    // const filePath = `public/${contactPhone}_${Date.now()}.ogg`
+    // const { data: uploadData, error: uploadError } = await supabase.storage
+    //   .from('voicenotes')
+    //   .upload(filePath, audioBlob)
 
-    if (uploadError) {
-      console.error('Error uploading audio to storage:', uploadError)
-      // Aquí podrías actualizar el mensaje optimista a un estado de 'failed'
-      return
-    }
+    // if (uploadError) {
+    //   console.error('Error uploading audio to storage:', uploadError)
+    //   // Aquí podrías actualizar el mensaje optimista a un estado de 'failed'
+    //   return
+    // }
 
-    // 2. Obtener la URL pública del archivo
-    const { data: publicUrlData } = supabase.storage
-      .from('voicenotes')
-      .getPublicUrl(uploadData.path)
+    // // 2. Obtener la URL pública del archivo
+    // const { data: publicUrlData } = supabase.storage
+    //   .from('voicenotes')
+    //   .getPublicUrl(uploadData.path)
 
-    // 3. Invocar la Edge Function con la URL pública y el contactId
-    const { error: invokeError } = await supabase.functions.invoke('send-audio', {
-      body: { to: contactPhone, audioUrl: publicUrlData.publicUrl, contactId: contactId },
-    })
+    // // 3. Invocar la Edge Function con la URL pública y el contactId
+    // const { error: invokeError } = await supabase.functions.invoke('send-audio', {
+    //   body: { to: contactPhone, audioUrl: publicUrlData.publicUrl, contactId: contactId },
+    // })
 
-    if (invokeError) {
-      console.error('Error invoking send-audio function:', invokeError)
-      if (invokeError.context && invokeError.context.json) {
-        console.error('Detailed error from function:', await invokeError.context.json());
-      }
-    }
+    // if (invokeError) {
+    //   console.error('Error invoking send-audio function:', invokeError)
+    //   if (invokeError.context && invokeError.context.json) {
+    //     console.error('Detailed error from function:', await invokeError.context.json());
+    //   }
+    // }
   }
 
   const handleSendMessage = async () => {
@@ -97,19 +98,20 @@ export default function MessageInput({
     onNewMessage(optimisticMessage)
     setMessage('')
 
+    // --- TODO: Refactorizar con Vercel Functions ---
     // Invocar la Edge Function para enviar el mensaje por WhatsApp
-    const { error: invokeError } = await supabase.functions.invoke('send-message', {
-      body: { to: contactPhone, message: message },
-    })
+    // const { error: invokeError } = await supabase.functions.invoke('send-message', {
+    //   body: { to: contactPhone, message: message },
+    // })
 
-    if (invokeError) {
-      console.error('Error invoking send-message function:', invokeError)
-      if (invokeError.context && invokeError.context.json) {
-        console.error('Detailed error from function:', await invokeError.context.json());
-      }
-      // Aquí podrías actualizar el mensaje optimista a un estado de 'failed'
-      // Por ejemplo: onUpdateMessage({ ...optimisticMessage, status: 'failed' })
-    }
+    // if (invokeError) {
+    //   console.error('Error invoking send-message function:', invokeError)
+    //   if (invokeError.context && invokeError.context.json) {
+    //     console.error('Detailed error from function:', await invokeError.context.json());
+    //   }
+    //   // Aquí podrías actualizar el mensaje optimista a un estado de 'failed'
+    //   // Por ejemplo: onUpdateMessage({ ...optimisticMessage, status: 'failed' })
+    // }
     // No guardamos en la DB desde aquí. Confiamos en los webhooks.
   }
 

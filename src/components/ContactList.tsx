@@ -1,21 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+// import { supabase } from '@/lib/supabaseClient' // Comentado
 
 export default function ContactList({ onSelectContact }: { onSelectContact: (contact: any) => void }) {
-  const [contacts, setContacts] = useState<any[]>([])
+  const [contacts, setContacts] = useState<any[]>([
+    // --- TODO: Refactorizar para obtener datos desde Vercel Postgres ---
+    // Datos de ejemplo para que la UI no se rompa
+    { id: 1, name: 'Ejemplo Contacto 1', phone_number: '+123456789' },
+    { id: 2, name: 'Ejemplo Contacto 2', phone_number: '+987654321' },
+  ])
 
   useEffect(() => {
-    const fetchContacts = async () => {
-      const { data, error } = await supabase.from('contacts').select('*')
-      if (error) {
-        console.error('Error fetching contacts:', error)
-      } else {
-        setContacts(data)
-      }
-    }
-    fetchContacts()
+    // const fetchContacts = async () => {
+    //   const { data, error } = await supabase.from('contacts').select('*')
+    //   if (error) {
+    //     console.error('Error fetching contacts:', error)
+    //   } else {
+    //     setContacts(data)
+    //   }
+    // }
+    // fetchContacts()
   }, [])
 
   const getInitials = (name: string) => {

@@ -53,34 +53,34 @@ export default function MessageInput({
     onNewMessage(optimisticMessage)
 
     // --- TODO: Refactorizar con Vercel Blob y Vercel Functions ---
-    // 1. Subir el archivo de audio a Supabase Storage
-    // const filePath = `public/${contactPhone}_${Date.now()}.ogg`
-    // const { data: uploadData, error: uploadError } = await supabase.storage
-    //   .from('voicenotes')
-    //   .upload(filePath, audioBlob)
+    // 1. Subir el archivo de audio a Vercel Blob (próximo paso)
+    const audioUrl = 'https://example.com/mock-audio.ogg'; // URL de marcador de posición por ahora
 
-    // if (uploadError) {
-    //   console.error('Error uploading audio to storage:', uploadError)
-    //   // Aquí podrías actualizar el mensaje optimista a un estado de 'failed'
-    //   return
-    // }
+    // 2. Invocar la Vercel Function con la URL del audio
+    try {
+      const response = await fetch('/api/send-audio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: contactPhone,
+          audioUrl: audioUrl, // Usaremos una URL real cuando integremos Vercel Blob
+          contactId: contactId,
+        }),
+      });
 
-    // // 2. Obtener la URL pública del archivo
-    // const { data: publicUrlData } = supabase.storage
-    //   .from('voicenotes')
-    //   .getPublicUrl(uploadData.path)
+      const result = await response.json();
 
-    // // 3. Invocar la Edge Function con la URL pública y el contactId
-    // const { error: invokeError } = await supabase.functions.invoke('send-audio', {
-    //   body: { to: contactPhone, audioUrl: publicUrlData.publicUrl, contactId: contactId },
-    // })
-
-    // if (invokeError) {
-    //   console.error('Error invoking send-audio function:', invokeError)
-    //   if (invokeError.context && invokeError.context.json) {
-    //     console.error('Detailed error from function:', await invokeError.context.json());
-    //   }
-    // }
+      if (!response.ok) {
+        console.error('Error al llamar a la función send-audio:', result.error);
+        // Aquí podrías actualizar el mensaje optimista a un estado de 'failed'
+      } else {
+        console.log('Respuesta de la función send-audio:', result.message);
+      }
+    } catch (error) {
+      console.error('Error de red o al procesar la petición a send-audio:', error);
+    }
   }
 
   const handleSendMessage = async () => {
